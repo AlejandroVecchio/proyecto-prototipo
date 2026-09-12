@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import type { PokemonBundle, PokemonPreview } from '../api/pokeapi'
 import { isPokemonBundle } from '../api/pokeapi'
 import type { KantoVersionId } from '../lib/versions'
@@ -6,6 +7,7 @@ import { padDex } from '../lib/i18n'
 import { TYPE_ES } from '../lib/i18n'
 import type { Gen1Type } from '../types'
 import { PokemonDetail } from './PokemonDetail'
+import { ShinyBurst } from './ShinyBurst'
 
 type Props = {
   data: PokemonPreview | PokemonBundle
@@ -36,6 +38,40 @@ export function PokemonView({
   onSelectPokemon,
   onOpenType,
 }: Props) {
+  const clicks = useRef(0)
+  const lastClick = useRef(0)
+  const [shiny, setShiny] = useState(false)
+  const [burst, setBurst] = useState(false)
+
+  useEffect(() => {
+    clicks.current = 0
+    lastClick.current = 0
+    setShiny(false)
+    setBurst(false)
+  }, [data.pokemon.id])
+
+  const onHeroClick = () => {
+    onOpenDetail()
+    if (shiny) return
+    const now = Date.now()
+    if (now - lastClick.current > 1200) clicks.current = 0
+    lastClick.current = now
+    clicks.current += 1
+    if (clicks.current < 20) return
+
+    clicks.current = 0
+    const url = artSprite(data.pokemon.id, artIndex, true)
+    const img = new Image()
+    const go = () => {
+      setShiny(true)
+      setBurst(true)
+      window.setTimeout(() => setBurst(false), 900)
+    }
+    img.onload = go
+    img.onerror = go
+    img.src = url
+  }
+
   return (
     <div className="poke-view">
       <div className="top-bar">
@@ -66,9 +102,16 @@ export function PokemonView({
         type="button"
         data-gb-nav
         data-gb-default={keepRefreshFocus ? undefined : true}
-        onClick={onOpenDetail}
+        onClick={onHeroClick}
       >
-        <img key={`${data.pokemon.id}-${artIndex}`} src={artSprite(data.pokemon.id, artIndex)} alt={data.displayName} />
+        <span className="hero-art">
+          <img
+            key={`${data.pokemon.id}-${artIndex}-${shiny ? 's' : 'n'}`}
+            src={artSprite(data.pokemon.id, artIndex, shiny)}
+            alt={data.displayName}
+          />
+          {burst ? <ShinyBurst seed={data.pokemon.id} /> : null}
+        </span>
         <p className="dex">
           Nº{padDex(data.pokemon.id)} {data.displayName.toUpperCase()}
         </p>

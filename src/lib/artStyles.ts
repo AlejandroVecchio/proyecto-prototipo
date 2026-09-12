@@ -1,60 +1,78 @@
 import type { KantoVersionId } from './versions'
 import { KANTO_VERSIONS } from './versions'
 
+const SHINY_DEFAULT = (id: number) =>
+  `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${id}.png`
+
 export const ART_STYLES = [
   {
     id: 'red-blue',
     label: 'Rojo / Azul',
     src: (id: number) =>
       `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-i/red-blue/${id}.png`,
+    shiny: SHINY_DEFAULT,
   },
   {
     id: 'yellow',
     label: 'Amarillo',
     src: (id: number) =>
       `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-i/yellow/${id}.png`,
+    shiny: SHINY_DEFAULT,
   },
   {
     id: 'gold',
     label: 'Oro',
     src: (id: number) =>
       `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-ii/gold/${id}.png`,
+    shiny: (id: number) =>
+      `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-ii/gold/shiny/${id}.png`,
   },
   {
     id: 'silver',
     label: 'Plata',
     src: (id: number) =>
       `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-ii/silver/${id}.png`,
+    shiny: (id: number) =>
+      `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-ii/silver/shiny/${id}.png`,
   },
   {
     id: 'crystal',
     label: 'Cristal',
     src: (id: number) =>
       `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-ii/crystal/${id}.png`,
+    shiny: (id: number) =>
+      `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-ii/crystal/shiny/${id}.png`,
   },
   {
     id: 'ruby-sapphire',
     label: 'Rubí / Zafiro',
     src: (id: number) =>
       `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-iii/ruby-sapphire/${id}.png`,
+    shiny: (id: number) =>
+      `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-iii/ruby-sapphire/shiny/${id}.png`,
   },
   {
     id: 'emerald',
     label: 'Esmeralda',
     src: (id: number) =>
       `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-iii/emerald/${id}.png`,
+    shiny: (id: number) =>
+      `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-iii/emerald/shiny/${id}.png`,
   },
   {
     id: 'firered-leafgreen',
     label: 'Rojo Fuego / Verde Hoja',
     src: (id: number) =>
       `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-iii/firered-leafgreen/${id}.png`,
+    shiny: (id: number) =>
+      `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-iii/firered-leafgreen/shiny/${id}.png`,
   },
   {
     id: 'lets-go',
     label: "Let's Go",
     src: (id: number) =>
       `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`,
+    shiny: SHINY_DEFAULT,
   },
 ] as const
 
@@ -103,9 +121,10 @@ const STYLE_MAX_ID: Record<string, number> = {
   'lets-go': 809,
 }
 
-export function artSprite(id: number, styleIndex: number): string {
+export function artSprite(id: number, styleIndex: number, shiny = false): string {
   const style = ART_STYLES[styleIndex] ?? ART_STYLES[0]
   const max = STYLE_MAX_ID[style.id] ?? 151
-  if (id > max) return defaultSprite(id)
+  if (id > max) return shiny ? SHINY_DEFAULT(id) : defaultSprite(id)
+  if (shiny) return style.shiny(id)
   return style.src(id)
 }
