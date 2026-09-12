@@ -6,6 +6,7 @@ import { artLabel, artSprite } from '../lib/artStyles'
 import { padDex } from '../lib/i18n'
 import { TYPE_ES } from '../lib/i18n'
 import type { Gen1Type } from '../types'
+import { play } from '../lib/gbSound'
 import { PokemonDetail } from './PokemonDetail'
 import { ShinyBurst } from './ShinyBurst'
 
@@ -65,6 +66,7 @@ export function PokemonView({
     const go = () => {
       setShiny(true)
       setBurst(true)
+      play('shiny')
       window.setTimeout(() => setBurst(false), 900)
     }
     img.onload = go

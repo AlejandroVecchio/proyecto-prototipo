@@ -1,5 +1,6 @@
-import { useEffect, useRef, type MouseEvent, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react'
 import { activateGbFocus, focusFirstNav, moveGbFocus, type PadDir } from '../lib/gbNav'
+import { isSoundOn, onSoundChange, play, toggleSound } from '../lib/gbSound'
 
 type Props = {
   children: ReactNode
@@ -10,23 +11,39 @@ type Props = {
 
 export function GameBoyShell({ children, onCycleArt, artLabel, focusKey }: Props) {
   const lcdRef = useRef<HTMLDivElement>(null)
+  const syntheticClick = useRef(false)
+  const [soundOn, setSoundOn] = useState(() => isSoundOn())
+
+  useEffect(() => onSoundChange(setSoundOn), [])
 
   const pad = (dir: PadDir) => {
     const lcd = lcdRef.current
     if (!lcd) return
+    play('move')
     moveGbFocus(lcd, dir)
   }
 
   const select = () => {
     const lcd = lcdRef.current
     if (!lcd) return
+    play('confirm')
+    syntheticClick.current = true
     activateGbFocus(lcd)
+    syntheticClick.current = false
   }
 
   const back = () => {
     const lcd = lcdRef.current
     const btn = lcd?.querySelector<HTMLElement>('[data-gb-back]')
+    play('back')
+    syntheticClick.current = true
     btn?.click()
+    syntheticClick.current = false
+  }
+
+  const cycleArt = () => {
+    play('select')
+    onCycleArt()
   }
 
   useEffect(() => {
@@ -86,10 +103,14 @@ export function GameBoyShell({ children, onCycleArt, artLabel, focusKey }: Props
     }
 
     const onClickCapture = (e: Event) => {
-      if (!blockClick) return
-      blockClick = false
-      e.preventDefault()
-      e.stopPropagation()
+      if (blockClick) {
+        blockClick = false
+        e.preventDefault()
+        e.stopPropagation()
+        return
+      }
+      if (syntheticClick.current) return
+      if (isControl(e.target)) play('confirm')
     }
 
     lcd.addEventListener('pointerdown', onDown)
@@ -145,7 +166,35 @@ export function GameBoyShell({ children, onCycleArt, artLabel, focusKey }: Props
   return (
     <div className="page">
       <div className="gb-shell">
-        <p className="gb-brand">GAME BOY</p>
+        <div className="gb-shell-top">
+          <p className="gb-brand">GAME BOY</p>
+          <button
+            className={soundOn ? 'gb-sound is-on' : 'gb-sound is-off'}
+            type="button"
+            tabIndex={-1}
+            aria-pressed={soundOn}
+            aria-label={soundOn ? 'Sonido activado' : 'Sonido desactivado'}
+            title={soundOn ? 'Sonido ON' : 'Sonido OFF'}
+            onClick={toggleSound}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                fill="currentColor"
+                d="M10 4v11.5a3.5 3.5 0 1 0 2 3V9.2l8-1.6V16.5a3.5 3.5 0 1 0 2 3V4.8L10 7.2V4z"
+              />
+              {soundOn ? null : (
+                <path
+                  className="gb-sound-slash"
+                  d="M4.5 4.5 L19.5 19.5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.6"
+                  strokeLinecap="square"
+                />
+              )}
+            </svg>
+          </button>
+        </div>
         <div className="gb-screen-frame">
           <div className="gb-screen-dots" aria-hidden="true">
             <span />
@@ -215,7 +264,7 @@ export function GameBoyShell({ children, onCycleArt, artLabel, focusKey }: Props
               className="pill-btn"
               type="button"
               tabIndex={-1}
-              onClick={onCycleArt}
+              onClick={cycleArt}
               aria-label={`Cambiar sprites: ${artLabel}`}
               title={`Sprites: ${artLabel}`}
             >

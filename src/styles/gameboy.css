@@ -53,12 +53,22 @@ body {
   position: relative;
 }
 
+.gb-shell-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 2px 12px 4px;
+  min-height: 32px;
+  flex: none;
+}
+
 .gb-brand {
   font-family: 'Press Start 2P', monospace;
   font-size: 8px;
   letter-spacing: 2px;
   color: #4a5240;
-  margin: 0 0 10px 6px;
+  margin: 0;
 }
 
 .gb-screen-frame {
@@ -320,6 +330,54 @@ body {
   display: flex;
   flex-direction: column;
   gap: 5px;
+  pointer-events: none;
+}
+
+.gb-sound {
+  position: relative;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.gb-sound svg {
+  width: 14px;
+  height: 14px;
+  display: block;
+}
+
+.gb-sound.is-off {
+  background: radial-gradient(circle at 32% 28%, #9aa37c, #6a7354);
+  color: #3e4434;
+  box-shadow:
+    inset 2px 2px 0 #c5ceab,
+    inset -2px -3px 0 #555c40,
+    2px 3px 0 #4a5240;
+}
+
+.gb-sound.is-on {
+  background: radial-gradient(circle at 32% 28%, #d4ee58, #5f8f14);
+  color: #143014;
+  box-shadow:
+    inset 2px 2px 0 #eef6a8,
+    inset -2px -3px 0 #3e5c10,
+    2px 3px 0 #4a5240;
+}
+
+.gb-sound:active {
+  transform: translateY(2px);
+  box-shadow:
+    inset 2px 2px 0 #555c40,
+    inset -1px -1px 0 #c5ceab,
+    1px 1px 0 #4a5240;
 }
 
 .gb-speaker i {
@@ -963,6 +1021,7 @@ select.version {
   }
 
   .gb-brand,
+  .gb-shell-top,
   .gb-controls,
   .start-select {
     flex: none;
